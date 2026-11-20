@@ -11,11 +11,18 @@ const SKILLS = join(PSTACK, "skills");
 // Outside pstack/ so Cursor, which copies the whole plugin folder, does not install this tree too.
 const OUT = join(ROOT, "harness", "pstack");
 const HARNESSES = [
-  { tree: "claude-code", label: "Claude Code", adapter: "docs/harness/claude-code.md" },
-  { tree: "codex", label: "Codex", adapter: "docs/harness/codex.md" },
+  { tree: "claude-code", label: "Claude Code", adapter: "docs/harness/claude-code.md", agentsRules: "AGENTS.claude.md" },
+  { tree: "codex", label: "Codex", adapter: "docs/harness/codex.md", agentsRules: "AGENTS.codex.md" },
+  { tree: "antigravity", label: "Antigravity", adapter: "docs/harness/antigravity.md", agentsRules: "AGENTS.antigravity.md", includeAgentsRulesAsPluginRule: true },
+  { tree: "pi-cli", label: "Pi CLI", adapter: "docs/harness/pi-cli.md", agentsRules: "AGENTS.pi-cli.md" },
+  { tree: "opencode", label: "OpenCode", adapter: "docs/harness/opencode.md", agentsRules: "AGENTS.opencode.md" },
 ];
 const GUIDE = "docs/guide";
-const MANIFESTS = ["plugin.json", ".claude-plugin/plugin.json"];
+const MANIFESTS = {
+  "Claude Code": ["plugin.json", ".claude-plugin/plugin.json"],
+  Codex: [],
+  Antigravity: [],
+};
 const COMMAND = "node scripts/generate-pstack-harness-trees.mjs";
 const GITHUB = "https://github.com/cursor/plugins";
 const LINK = /\]\(([^)\s]+)\)/g;
@@ -23,7 +30,7 @@ const README = `# pstack harness trees
 
 This folder is generated from \`pstack/skills\`, \`pstack/agents\`, \`pstack/${GUIDE}\`, the adapters under \`pstack/docs/harness/\`, \`pstack/README.md\`, \`pstack/LICENSE\`, and \`pstack/plugin.json\`. Do not edit it by hand.
 
-Cursor uses \`pstack/\` directly, Claude Code installs \`claude-code/\`, and Codex uses the skills-only tree at \`codex/\`. The trees leave out the rest of \`pstack/\`, such as \`pstack/automations\` and \`pstack/assets\`. A relative link to a pstack file that a tree leaves out points at that file on GitHub \`main\` instead.
+Cursor uses \`pstack/\` directly, Claude Code installs \`claude-code/\`, Codex uses the skills-only tree at \`codex/\`, and Antigravity uses the plugin tree at \`antigravity/\`. The trees leave out the rest of \`pstack/\`, such as \`pstack/automations\` and \`pstack/assets\`. A relative link to a pstack file that a tree leaves out points at that file on GitHub \`main\` instead.
 
 After editing those sources, run \`${COMMAND}\` from the repository root and commit the result.
 `;
@@ -121,7 +128,7 @@ function has(files, path) {
   return files.has(path) || [...files.keys()].some((key) => key.startsWith(`${path}/`));
 }
 
-function render({ label, adapter }) {
+function render({ label, adapter, agentsRules, includeAgentsRulesAsPluginRule }) {
   // Skills read the adapter, the guide, and the README at runtime, so Claude Code never fetches them.
   const copies = [
     ...walk(SKILLS),
@@ -129,7 +136,7 @@ function render({ label, adapter }) {
     ...walk(join(PSTACK, GUIDE)),
     ...HARNESSES.map(({ adapter }) => join(PSTACK, adapter)),
     join(PSTACK, "README.md"),
-    join(PSTACK, label === "Claude Code" ? "AGENTS.claude.md" : "AGENTS.codex.md"),
+    join(PSTACK, agentsRules),
   ];
   const files = new Map(copies.map((path) => [relative(PSTACK, path), file(path)]));
   const line =
@@ -142,7 +149,24 @@ function render({ label, adapter }) {
   }
   files.set("LICENSE", file(join(PSTACK, "LICENSE")));
   if (label === "Claude Code") {
-    for (const manifest of MANIFESTS) files.set(manifest, file(join(PSTACK, "plugin.json")));
+    for (const manifest of MANIFESTS[label]) files.set(manifest, file(join(PSTACK, "plugin.json")));
+  }
+  if (includeAgentsRulesAsPluginRule) {
+    files.set("rules/AGENTS.md", {
+      bytes: Buffer.from(`# pstack Antigravity rules\n\nRead \`docs/harness/antigravity.md\` once per session before following any pstack skill, playbook, or role. Read \`AGENTS.antigravity.md\` when this task explicitly requires the complete workflow rules rather than the adapter alone. Map every Cursor name, model, agent type, path, and Cursor-only capability through that adapter; do not pass the fields or slugs it does not expose. Keep verification and authorization boundaries unchanged.\n`),
+      executable: false,
+    });
+    files.set("plugin.json", {
+      bytes: Buffer.from(JSON.stringify({
+        name: "pstack",
+        version: "0.15.43",
+        description: "poteto's pstack agent style and workflows adapted for Antigravity CLI.",
+      }, null, 2) + "\n"),
+      executable: false,
+    });
+    const agentPath = "agents/poteto-agent.md";
+    const agent = files.get(agentPath).bytes.toString("utf8").replace(/^model:.*$/m, "# The Cursor model hint is omitted on Antigravity so this delegate inherits the caller/session model and reasoning effort.");
+    files.get(agentPath).bytes = Buffer.from(agent);
   }
   for (const [path, entry] of files) {
     if (!path.endsWith(".md")) continue;
@@ -152,7 +176,7 @@ function render({ label, adapter }) {
       const kind = statSync(join(PSTACK, target)).isDirectory() ? "tree" : "blob";
       return `](${GITHUB}/${kind}/main/pstack/${target}${href.slice(href.search(/[#?]|$/))})`;
     });
-    entry.bytes = Buffer.from(label === "Codex" ? text.replace(/[ \t]+$/gm, "").replace(/\n+$/, "\n") : text);
+    entry.bytes = Buffer.from(label !== "Claude Code" ? text.replace(/[ \t]+$/gm, "").replace(/\n+$/, "\n") : text);
   }
   return files;
 }

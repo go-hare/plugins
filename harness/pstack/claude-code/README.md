@@ -35,12 +35,27 @@ in codex:
 
 use the [codex adapter](./docs/harness/codex.md). the generated skills-only tree is `harness/pstack/codex/` at the repository root. expose its skill directories through Codex's project `.agents/skills/` or user `$HOME/.agents/skills/` discovery path while retaining the adjacent docs and agent instructions. invoke `$poteto-mode` explicitly. this does not install automatic routing hooks or change global configuration. the adapter covers tools, subagent fields, models, setup, paths, and Cursor-only features, just as the Claude Code adapter does.
 
+in antigravity cli:
+
+use the [antigravity adapter](./docs/harness/antigravity.md). the generated plugin tree is `harness/pstack/antigravity/` at the repository root. install or link it through `~/.gemini/antigravity-cli/plugins/` or expose its `skills/` directories through workspace/global Antigravity skills discovery. the tree includes `plugin.json`, a short always-on loader under `rules/AGENTS.md`, and the complete `AGENTS.antigravity.md` at the plugin root for explicit use. validate with `agy plugin validate` and inspect with `agy plugin list --json` before invoking `/poteto-mode`.
+
+in pi cli:
+
+use the [pi adapter](./docs/harness/pi-cli.md). the generated skills-only tree is `harness/pstack/pi-cli/` at the repository root. expose its skill directories through Pi's skill discovery path or load a skill explicitly with `pi --skill <path>` while retaining the adjacent docs and agent instructions. configure roles with `/setup-pstack` and invoke `/poteto-mode` explicitly; this does not install automatic routing hooks or change global configuration.
+
+in opencode:
+
+use the [opencode adapter](./docs/harness/opencode.md). the generated skills-only tree is `harness/pstack/opencode/` at the repository root. expose its skill directories through `.opencode/skills/`, `.agents/skills/`, or `~/.config/opencode/skills` while retaining the adjacent docs and agent instructions. register `poteto-agent` and `comment-sicko` if native subagents are needed, and invoke `@poteto-mode` explicitly; this does not install automatic routing hooks or change global configuration.
+
 ## complete agent rules
 
 - [Claude Code rules](./AGENTS.claude.md) contain the complete workflow with Claude Code mappings.
 - [Codex rules](https://github.com/cursor/plugins/blob/main/pstack/AGENTS.codex.md) contain the complete workflow with Codex mappings.
+- [Antigravity rules](https://github.com/cursor/plugins/blob/main/pstack/AGENTS.antigravity.md) contain the complete workflow with Antigravity mappings.
+- [Pi CLI rules](https://github.com/cursor/plugins/blob/main/pstack/AGENTS.pi-cli.md) contain the complete workflow with Pi CLI mappings.
+- [OpenCode rules](https://github.com/cursor/plugins/blob/main/pstack/AGENTS.opencode.md) contain the complete workflow with OpenCode mappings.
 
-Choose the file for your host. The generated harness tree includes its matching file; these files are not automatically installed as global instructions. The existing `AGENTS.md` is retained as the original consolidated copy.
+Choose the file for your host. The generated harness tree includes its matching file; Claude Code and Codex do not install these files as global instructions. Antigravity loads a short `rules/AGENTS.md` loader for the adapter and keeps `AGENTS.antigravity.md` at the plugin root for explicit use. The existing `AGENTS.md` is retained as the original consolidated copy.
 
 ## get started
 
