@@ -31,6 +31,17 @@ claude code prefixes plugin commands and agents, so `/poteto-mode` is `/pstack:p
 
 claude code installs a generated copy of pstack, including this readme and the guide, from [`harness/pstack/`](https://github.com/cursor/plugins/tree/main/harness/pstack) at the repository root. after you change pstack, run `node scripts/generate-pstack-harness-trees.mjs` from the repository root and commit the result. ci fails while the generated copy is out of date.
 
+in codex:
+
+use the [codex adapter](./docs/harness/codex.md). the generated skills-only tree is `harness/pstack/codex/` at the repository root. expose its skill directories through Codex's project `.agents/skills/` or user `$HOME/.agents/skills/` discovery path while retaining the adjacent docs and agent instructions. invoke `$poteto-mode` explicitly. this does not install automatic routing hooks or change global configuration. the adapter covers tools, subagent fields, models, setup, paths, and Cursor-only features, just as the Claude Code adapter does.
+
+## complete agent rules
+
+- [Claude Code rules](./AGENTS.claude.md) contain the complete workflow with Claude Code mappings.
+- [Codex rules](https://github.com/cursor/plugins/blob/main/pstack/AGENTS.codex.md) contain the complete workflow with Codex mappings.
+
+Choose the file for your host. The generated harness tree includes its matching file; these files are not automatically installed as global instructions. The existing `AGENTS.md` is retained as the original consolidated copy.
+
 ## get started
 
 two steps:
